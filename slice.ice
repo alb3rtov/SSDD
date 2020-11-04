@@ -8,7 +8,7 @@ module IceGauntlet {
 		void getNewToken (string user, string passwordHash) throws Unauthorized;
 
 		//Método para comprobar si el token es válido
-		boolean isValid (string token);
+		bool isValid (string token);
 	};
 
 	//Interfaz de gestión de mapas

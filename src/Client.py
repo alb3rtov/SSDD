@@ -3,7 +3,7 @@
 
 import sys
 import Ice
-Ice.loadSlice('slice.ice')
+Ice.loadSlice('src/slice.ice')
 import IceGauntlet
 
 #class RoomsToolClient(Ice.Application):

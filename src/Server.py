@@ -3,7 +3,7 @@
 
 import sys
 import Ice
-Ice.loadSlice('slice.ice')
+Ice.loadSlice('src/slice.ice')
 import IceGauntlet
 
 class MapManaging(IceGauntlet.MapManaging):
@@ -15,12 +15,11 @@ class Server(Ice.Application):
     def run(self, argv):
         broker = self.communicator()
         servant = MapManaging()
-
+        
         adapter = broker.createObjectAdapter("MMAdapter")
         proxy = adapter.add(servant, broker.stringToIdentity("mapmanaging1"))
 
-        print(proxy)
-        sys.stdout.flush()
+        print(proxy, flush = True)
 
         adapter.activate()
         self.shutdownOnInterrupt()

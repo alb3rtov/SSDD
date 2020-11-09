@@ -6,9 +6,22 @@ import Ice
 Ice.loadSlice('src/slice.ice')
 import IceGauntlet
 
-class MapManaging(IceGauntlet.MapManaging):
-    def publish(self, mapName, roomData, current=None):
-        print("Map name: {0}, RoomData: {1}".format(mapName, roomData))
+class MapManaging(IceGauntlet.MapManaging, Ice.Application):
+
+    def publish(self, token, roomData, argv):
+        proxy = self.communicator().stringToProxy(sys.argv[1])
+        gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
+
+        if not gauntlet:
+            raise RunTimeError('Invalid proxy')
+
+        print("token: {0}, RoomData: {1}".format(token, roomData))
+        
+        if (gauntlet.isValid(token)):
+            print("El token es valido")
+        else:
+            print("El token es no es valido")
+
         sys.stdout.flush()
 
 class Server(Ice.Application):

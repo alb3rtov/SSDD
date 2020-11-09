@@ -1,16 +1,10 @@
 module IceGauntlet {
 
-	exception Unauthorized {
-	
-	}
+	exception Unauthorized {}
 
-	exception RoomAlreadyExists {
-	
-	}
+	exception RoomAlreadyExists {}
 
-	exception RoomNotExists {
-	
-	}
+	exception RoomNotExists {}
 
 	struct Room {
 		//array de bytes
@@ -23,7 +17,7 @@ module IceGauntlet {
 		void changePassword (string user, string currentPassHash, string newPassHash) throws Unauthorized;
 		
 		//Método para obtener token de autorización
-		void getNewToken (string user, string passwordHash) throws Unauthorized;
+		string getNewToken (string user, string passwordHash) throws Unauthorized;
 
 		//Método para comprobar si el token es válido
 		bool isValid (string token) throws Unauthorized;

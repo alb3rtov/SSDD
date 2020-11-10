@@ -3,6 +3,7 @@
 
 import sys
 import Ice
+import json
 Ice.loadSlice('src/slice.ice')
 import IceGauntlet
 
@@ -14,13 +15,26 @@ class MapManaging(IceGauntlet.MapManaging, Ice.Application):
 
         if not gauntlet:
             raise RunTimeError('Invalid proxy')
-
-        print("token: {0}, RoomData: {1}".format(token, roomData))
-        
+    
+        print("token: {0}".format(token))
+   
         if (gauntlet.isValid(token)):
             print("El token es valido")
         else:
             print("El token es no es valido")
+            
+        #print(type(roomData)) # DEBUG
+        
+        #print(type(json.loads(roomData))) #DEBUG
+               
+        room_json = json.loads(roomData)
+
+        roomName = 'maps/' + (str(room_json['room'])).replace(" ", "_") + '.json'
+        #print(roomName)
+        
+        #Publish the .json file in maps folder
+        with open(roomName, 'w') as f:
+            json.dump(room_json,f)
 
         sys.stdout.flush()
 

@@ -4,6 +4,7 @@
 import sys
 import Ice
 import getpass
+import json
 Ice.loadSlice('src/slice.ice')
 import IceGauntlet
 
@@ -33,8 +34,16 @@ class Client(Ice.Application):
             raise RunTimeError('Invalid proxy')
 
         token = roomToolClient.getNewToken(argv) 
-        print(token) 
-        gauntlet.publish(token, "datos")
+        #print(token) #DEBUG 
+        
+        roomData = input("Enter roomData (Path of JSON file): ");
+        
+        with open(roomData) as f:
+            data = json.load(f)
+    
+        #print(json.dumps(data)) #DEBUG
+        
+        gauntlet.publish(token, json.dumps(data))
 
         return 0
 

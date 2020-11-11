@@ -5,7 +5,7 @@ import sys
 import Ice
 import getpass
 import json
-Ice.loadSlice('src/slice.ice')
+Ice.loadSlice('slice.ice')
 import IceGauntlet
 
 class RoomToolClient(Ice.Application):

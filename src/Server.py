@@ -4,7 +4,7 @@
 import sys
 import Ice
 import json
-Ice.loadSlice('src/slice.ice')
+Ice.loadSlice('slice.ice')
 import IceGauntlet
 
 class MapManaging(IceGauntlet.MapManaging, Ice.Application):

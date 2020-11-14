@@ -7,6 +7,16 @@ import json
 Ice.loadSlice('slice.ice')
 import IceGauntlet
 
+
+class Game(IceGauntlet.Game, Ice.Application):
+    
+    def getRoom(self, argv):
+        with open('maps/prueba_room.json') as f:
+            data = json.load(f)
+
+        return json.dumps(data)
+
+
 class MapManaging(IceGauntlet.MapManaging, Ice.Application):
 
     def publish(self, token, roomData, argv):
@@ -23,34 +33,42 @@ class MapManaging(IceGauntlet.MapManaging, Ice.Application):
         else:
             print("El token es no es valido")
             
-        #print(type(roomData)) # DEBUG
-        
-        #print(type(json.loads(roomData))) #DEBUG
-               
-        room_json = json.loads(roomData)
+        room_json = json.loads(roomData) #Loads file as a string
 
         roomName = 'maps/' + (str(room_json['room'])).replace(" ", "_") + '.json'
         #print(roomName)
         
         #Publish the .json file in maps folder
         with open(roomName, 'w') as f:
-            json.dump(room_json,f)
+            json.dump(room_json,f) #Dictionary to json file
 
         sys.stdout.flush()
 
 class Server(Ice.Application):
     def run(self, argv):
-        broker = self.communicator()
-        servant = MapManaging()
+        MMbroker = self.communicator()
+        MMservant = MapManaging()
         
-        adapter = broker.createObjectAdapter("MMAdapter")
-        proxy = adapter.add(servant, broker.stringToIdentity("mapmanaging1"))
+        MMadapter = MMbroker.createObjectAdapter("MMAdapter")
+        MMproxy = MMadapter.add(MMservant, MMbroker.stringToIdentity("mapmanaging1"))
 
-        print(proxy, flush = True)
+        print(MMproxy, flush = True)
 
-        adapter.activate()
+        Gbroker = self.communicator()
+        Gservant = Game()
+        
+        Gadapter = Gbroker.createObjectAdapter("GameAdapter")
+        Gproxy = Gadapter.add(Gservant, Gbroker.stringToIdentity("game1"))
+
+        print(Gproxy, flush = True)
+    
+        MMadapter.activate()
+        Gadapter.activate()
+        
         self.shutdownOnInterrupt()
-        broker.waitForShutdown()
+        
+        MMbroker.waitForShutdown()
+        Gbroker.waitForShutdown()
 
         return 0
 

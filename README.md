@@ -6,7 +6,7 @@ https://github.com/alb3rtov/ssdd
 - Alvaro Ramos Cobacho <Alvaro.Ramos4@alu.uclm.es>
 
 # Directorios
-- El "slice" se encuentra en la raíz del proyecto (slilce.ice)
+- El "slice" se encuentra en la raíz del proyecto (slice.ice)
 - Directorio "src": contiene los archivos de python
 - Directorio "config": contiene los archivos de configuración de ZeroC Ice
 

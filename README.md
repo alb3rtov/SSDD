@@ -9,6 +9,7 @@ https://github.com/alb3rtov/ssdd
 - El "slice" se encuentra en la raíz del proyecto (slice.ice)
 - Directorio "src": contiene los archivos de python
 - Directorio "config": contiene los archivos de configuración de ZeroC Ice
+- Directorio "maps": contiene los mapas (archivos .json), que los clientes subiran.
 
 # Ejecución:
 En la raíz del repositorio existen una serie de scripts en bash para la ejecución del servidor y cliente.

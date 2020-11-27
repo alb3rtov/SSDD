@@ -49,26 +49,41 @@ class RoomToolClient(Ice.Application):
         
 
 class Client(Ice.Application):
-    
-    def run (self, argv):    
-        roomToolClient = RoomToolClient()
-        proxy = self.communicator().stringToProxy(argv[1])
-        gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
 
-        if not gauntlet:
-            raise RunTimeError('Invalid proxy')
+    def run (self, argv):
+        if (argv[1] == './upload_map.sh'):
+            proxy = self.communicator().stringToProxy(argv[2])
+            gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
+           
+            if not gauntlet:
+                raise RunTimeError('Invalid proxy')
 
-        token = roomToolClient.getNewToken(argv) 
+            with open (argv[4]) as f:
+                data = json.load(f)
+
+            gauntlet.publish(argv[3], json.dumps(data))
+        else:
+            print("otro")
+
+        
+        #roomToolClient = RoomToolClient()
+        #proxy = self.communicator().stringToProxy(argv[1])
+        #gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
+
+        #if not gauntlet:
+        #    raise RunTimeError('Invalid proxy')
+
+        #token = roomToolClient.getNewToken(argv) 
         #print(token) #DEBUG 
         
-        roomData = input("Enter roomData (Path of JSON file): ");
+        #roomData = input("Enter roomData (Path of JSON file): ");
         
-        with open(roomData) as f:
-            data = json.load(f)
+        #with open(roomData) as f:
+        #    data = json.load(f)
     
-        gauntlet.publish(token, json.dumps(data))
+        #gauntlet.publish(token, json.dumps(data))
          
-        roomToolClient.getRoom(argv)
+        #roomToolClient.getRoom(argv)
 
         return 0
 

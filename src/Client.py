@@ -9,6 +9,22 @@ import os
 Ice.loadSlice('slice.ice')
 import IceGauntlet
 
+
+class AuthenticationClient(Ice.Application): 
+
+    def getNewToken(self, argv):
+        proxy = self.communicator().stringToProxy(argv[1])
+        gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
+
+        if not gauntlet:
+            raise RunTimeError('Invalid proxy')
+
+        username = input("Enter username: ")
+        password = getpass.getpass("Enter password: ")
+        
+        return gauntlet.getNewToken(username, password)
+    
+
 class RoomToolClient(Ice.Application):
     
     def getRoom(self, argv):
@@ -34,23 +50,12 @@ class RoomToolClient(Ice.Application):
             json.dump(room_json,f)
     
         return 0
-    
-    def getNewToken(self, argv):
-        proxy = self.communicator().stringToProxy(argv[3])
-        gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
-
-        if not gauntlet:
-            raise RunTimeError('Invalid proxy')
-
-        username = input("Enter username: ")
-        password = getpass.getpass("Enter password: ")
-        
-        return gauntlet.getNewToken(username, password)
-        
+       
 
 class Client(Ice.Application):
 
     def run (self, argv):
+
         if (argv[1] == './upload_map.sh'):
             proxy = self.communicator().stringToProxy(argv[2])
             gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
@@ -62,9 +67,18 @@ class Client(Ice.Application):
                 data = json.load(f)
 
             gauntlet.publish(argv[3], json.dumps(data))
-        else:
-            print("otro")
 
+        elif (argv[1] == './auth_user.sh'):
+            proxy = self.communicator().stringToProxy(argv[2])
+            gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
+
+            if not gauntlet:
+                raise RunTimeError('Invalid proxy')
+            
+            username = input("Enter username: ")
+            password = getpass.getpass("Enter password: ")
+
+            print(gauntlet.getNewToken(username, password))
         
         #roomToolClient = RoomToolClient()
         #proxy = self.communicator().stringToProxy(argv[1])

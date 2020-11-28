@@ -10,25 +10,10 @@ import hashlib
 Ice.loadSlice('slice.ice')
 import IceGauntlet
 
-
-class AuthenticationClient(Ice.Application): 
-
-    def getNewToken(self, argv):
-        proxy = self.communicator().stringToProxy(argv[1])
-        gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
-
-        if not gauntlet:
-            raise RunTimeError('Invalid proxy')
-
-        username = input("Enter username: ")
-        password = getpass.getpass("Enter password: ")
-        
-        return gauntlet.getNewToken(username, password)
-    
-
-class RoomToolClient(Ice.Application):
+class GameToolClient(Ice.Application):
     
     def getRoom(self, argv):
+        
         proxy = self.communicator().stringToProxy(argv[2])
         gauntlet = IceGauntlet.GamePrx.checkedCast(proxy)
 
@@ -51,39 +36,74 @@ class RoomToolClient(Ice.Application):
             json.dump(room_json,f)
     
         return 0
-       
+    
+class RoomToolClient(Ice.Application):
+    
+    def mapManagingProxy(self, argv):
+        
+        proxy = self.communicator().stringToProxy(argv[2])
+        gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
+        
+        if not gauntlet:
+            raise RunTimeError('Invalid proxy')
+        
+        return gauntlet  
+
+
+class AuthenticationToolClient(Ice.Application):
+    
+    def authenticationProxy(self, argv):
+
+        proxy = self.communicator().stringToProxy(argv[2])
+        gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
+
+        if not gauntlet:
+            raise RunTimeError('Invalid proxy')
+
+        return gauntlet
 
 class Client(Ice.Application):
 
     def run (self, argv):
 
         if (argv[1] == './upload_map.sh'):
-            proxy = self.communicator().stringToProxy(argv[2])
-            gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
            
-            if not gauntlet:
-                raise RunTimeError('Invalid proxy')
+            roomToolClient = RoomToolClient()
+            gauntlet = roomToolClient.mapManagingProxy(argv)
 
             with open (argv[4]) as f:
                 data = json.load(f)
 
             gauntlet.publish(argv[3], json.dumps(data))
 
-        elif (argv[1] == './auth_user.sh'):
-            proxy = self.communicator().stringToProxy(argv[2])
-            gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
+        elif (argv[1] == './delete_map.sh'):
+            roomToolClient = RoomToolClient()
+            gauntlet = roomToolClient.mapManagingProxy(argv)
+            #do something
+            #gauntlet.remove(argv[3], roomName)
 
-            if not gauntlet:
-                raise RunTimeError('Invalid proxy')
-            
+        elif (argv[1] == './auth_user.sh'):
+            authenticationToolClient = AuthenticationToolClient()
+            gauntlet = authenticationToolClient.authenticationProxy(argv)
+
             username = input("Enter username: ")
             password = getpass.getpass("Enter password: ")
 
             m = hashlib.sha256()
             m.update(password.encode('utf8'))
 
+            # Print user new token
             print(gauntlet.getNewToken(username, m.hexdigest()))
         
+        elif (argv[1] == './run_game.sh'):
+            proxy = self.communicator().stringToProxy(argv[2])
+            gauntlet = IceGauntlet.GamePrx.checkCast(proxy)
+            
+            if not gaunlet:
+                raise RunTimeError('Invalid proxy')
+            
+            gauntlet.getRoom()    
+
         #roomToolClient = RoomToolClient()
         #proxy = self.communicator().stringToProxy(argv[1])
         #gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)

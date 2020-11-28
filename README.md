@@ -10,6 +10,7 @@ https://github.com/alb3rtov/ssdd
 - Directorio "src": contiene los archivos de python
 - Directorio "config": contiene los archivos de configuración de ZeroC Ice
 - Directorio "maps": contiene los mapas (archivos .json), que los clientes subiran.
+- Directorio "gauntlet": contiene los ficheros del juego ICEGauntlet.
 
 # Ejecución:
 En la raíz del repositorio existen una serie de scripts en bash para la ejecución del servidor y cliente.

@@ -26,4 +26,5 @@ En la raíz del repositorio existen una serie de scripts en bash para la ejecuci
 ```bash
   ./auth_user.sh <Proxy servicio autenticacion>
 ```
-
+   ### Ejemplo autenticacion en el servidor
+   ![Alt Text](https://i.imgur.com/OWDgNx7.gif)

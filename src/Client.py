@@ -6,6 +6,7 @@ import Ice
 import getpass
 import json
 import os
+import hashlib
 Ice.loadSlice('slice.ice')
 import IceGauntlet
 
@@ -78,7 +79,10 @@ class Client(Ice.Application):
             username = input("Enter username: ")
             password = getpass.getpass("Enter password: ")
 
-            print(gauntlet.getNewToken(username, password))
+	    m = hashlib.sha256()
+	    m.update(password.encode('utf8'))
+
+            print(gauntlet.getNewToken(username, m.digest()))
         
         #roomToolClient = RoomToolClient()
         #proxy = self.communicator().stringToProxy(argv[1])

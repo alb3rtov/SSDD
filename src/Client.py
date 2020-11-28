@@ -79,10 +79,10 @@ class Client(Ice.Application):
             username = input("Enter username: ")
             password = getpass.getpass("Enter password: ")
 
-	    m = hashlib.sha256()
-	    m.update(password.encode('utf8'))
+            m = hashlib.sha256()
+            m.update(password.encode('utf8'))
 
-            print(gauntlet.getNewToken(username, m.digest()))
+            print(gauntlet.getNewToken(username, m.hexdigest()))
         
         #roomToolClient = RoomToolClient()
         #proxy = self.communicator().stringToProxy(argv[1])

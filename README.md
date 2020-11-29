@@ -28,4 +28,12 @@ En la raíz del repositorio existen una serie de scripts en bash para la ejecuci
 ```
    ### Ejemplo autenticacion en el servidor
    ![Alt Text](https://i.imgur.com/caU3ARR.gif)
-
+   
+- run_game.sh : Muestra un menú para ejecutar el juego local, y para conseguir una room del servicio de juego.
+```bash
+  ./run_game.sh <Proxy servicio juego>
+```
+   ### Ejemplo método getRoom
+   El método getRoom elige un mapa aleatorio. Muestra por pantalla los mapas disponibles localmente.
+   
+   ![Alt Text](https://i.imgur.com/93l7eN8.gif)

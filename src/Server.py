@@ -4,6 +4,7 @@
 import sys
 import Ice
 import json
+import os
 Ice.loadSlice('slice.ice')
 import IceGauntlet
 
@@ -27,19 +28,58 @@ class MapManaging(IceGauntlet.MapManaging, Ice.Application):
             raise RunTimeError('Invalid proxy')
     
         print("token: {0}".format(token))
-   
+  
         if (gauntlet.isValid(token)):
+
             print("El token es valido")
+
+            filename = "tokenRoom.json"
             
             room_json = json.loads(roomData) #Loads file as a string
             roomName = 'maps/' + (str(room_json['room'])).replace(" ", "_") + '.json'
+
+            #Si el archivo no existe, nuevo.
+            if (not os.path.isfile(filename)):
+                data = {}
+
+                data[roomName] = token
+
+                with open(filename, 'w') as f:
+                    json.dump(data,f, indent=4)
+
+                #Publish the .json file in maps folder
+                with open(roomName, 'w') as f:
+                    json.dump(room_json,f) #Dictionary to json file
             
-            #Publish the .json file in maps folder
-            with open(roomName, 'w') as f:
-                json.dump(room_json,f) #Dictionary to json file
-            
-            sys.stdout.flush() 
-        
+                sys.stdout.flush() 
+
+            else:
+                with open(filename) as file:
+                    data = json.load(file)
+
+                if roomName in data:
+                    
+                    if data[roomName] == token: # eres el dueño del mapa
+                        
+                        with open(roomName, 'w') as f:
+                            json.dump(room_json,f)
+                            
+                        print("mapa reemplazado")
+                        sys.stdout.flush()
+                        
+                    else: # no eres el dueño del mapa
+                        print('RoomAlreadyExists')
+                else:
+                    data[roomName] = token
+
+                    with open(filename, 'w') as f:
+                        json.dump(data, f, indent=4)
+
+                    with open(roomName, 'w') as f:
+                        json.dump(room_json,f)
+                    
+                    sys.stdout.flush()
+
         else:
             print("El token es no es valido")
             

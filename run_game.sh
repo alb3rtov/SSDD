@@ -11,17 +11,36 @@ select opt in jugar getroom salir; do
 
 	case $opt in
 		jugar)
-			file=~/.icegautletmaps/prueba_room.json
+			#file=~/.icegauntletmaps/prueba_room.json
+
+			mapsDir=~/.icegauntletmaps
+			
 			echo "Ejecutando juego..."
-			if test -f "$file"; then
-				icegautlet/dungeon_local $file
+			
+			if [[ -d $mapsDir ]] 
+			then
+				if [ -z "$(ls -A $mapsDir)" ]; then
+					echo "Empty"
+				else
+					echo "Introduce el nombre del mapa: "
+					read map
+					
+					mapPath="$mapsDir/$map"
+					
+					icegauntlet/dungeon_local $mapPath
+				fi
 			else
-				echo "$file no existe, utilize la segunda opcion"
+				echo "$mapsDir no existe, utilize la segunda opcion"
 			fi
+			break
 			;;
 		getroom)
-			echo "Descargar room del servidor de mapas"
-			./src/Client.py --Ice.Config=config/Client.config "getroom" "$1"	
+			./src/Client.py --Ice.Config=config/Client.config "$0" "$1"
+			mapas=`ls ~/.icegauntletmaps`
+			echo ""
+			echo "Mapas disponibles:"
+			echo "$mapas"
+			break
 			;;
 		salir)
 			break

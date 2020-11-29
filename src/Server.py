@@ -5,6 +5,7 @@ import sys
 import Ice
 import json
 import os
+import random
 Ice.loadSlice('slice.ice')
 import IceGauntlet
 
@@ -12,12 +13,27 @@ import IceGauntlet
 class Game(IceGauntlet.Game, Ice.Application):
     
     def getRoom(self, argv):
-        with open('maps/prueba_room.json') as f:
-            data = json.load(f)
 
-        return json.dumps(data)
+        #comprobar que hay mapas en maps/
+        # elegir aleatoriamente un mapa
+
+        if (not os.listdir("maps/")):
+            print("Directory vacio, debe subir mapa")
+        else:
+            for root, dirs, files in os.walk('maps/'):
+                
+                value = random.randint(0, len(files)-1)
+                filename = 'maps/' + files[value]
+
+            print(filename)
+            with open(filename) as f:
+                data = json.load(f)
+            
+            return json.dumps(data)
 
 
+        
+       
 class MapManaging(IceGauntlet.MapManaging, Ice.Application):
 
     def publish(self, token, roomData, argv):

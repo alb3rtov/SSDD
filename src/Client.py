@@ -16,7 +16,7 @@ class GameToolClient(Ice.Application):
         
         proxy = self.communicator().stringToProxy(argv[2])
         gauntlet = IceGauntlet.GamePrx.checkedCast(proxy)
-
+        
         if not gauntlet:
             raise RumTimeError('Invalid proxy')
 
@@ -31,7 +31,7 @@ class GameToolClient(Ice.Application):
             os.system('mkdir ' + path)
 
         roomName = path + '/' + (str(room_json['room'])).replace(" ", "_") + '.json'
-
+        #print(roomName)
         with open(roomName, 'w') as f:
             json.dump(room_json,f)
     
@@ -96,13 +96,16 @@ class Client(Ice.Application):
             print(gauntlet.getNewToken(username, m.hexdigest()))
         
         elif (argv[1] == './run_game.sh'):
-            proxy = self.communicator().stringToProxy(argv[2])
-            gauntlet = IceGauntlet.GamePrx.checkCast(proxy)
+            gameToolClient = GameToolClient()
+            gauntlet = gameToolClient.getRoom(argv)
             
-            if not gaunlet:
-                raise RunTimeError('Invalid proxy')
+            #proxy = self.communicator().stringToProxy(argv[2])
+            #gauntlet = IceGauntlet.GamePrx.checkCast(proxy)
             
-            gauntlet.getRoom()    
+            #if not gaunlet:
+            #    raise RunTimeError('Invalid proxy')
+            
+            #gauntlet.getRoom()    
 
         #roomToolClient = RoomToolClient()
         #proxy = self.communicator().stringToProxy(argv[1])

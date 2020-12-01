@@ -10,16 +10,15 @@ Ice.loadSlice('slice.ice')
 import IceGauntlet
 
 
-class Game(IceGauntlet.Game, Ice.Application):
+class Dungeon(IceGauntlet.Dungeon, Ice.Application):
     
     def getRoom(self, argv):
 
         #comprobar que hay mapas en maps/
-        # elegir aleatoriamente un mapa
-
         if (not os.listdir("maps/")):
             print("Directory vacio, debe subir mapa")
         else:
+            #Elegir aleatoriamente un mapa
             for root, dirs, files in os.walk('maps/'):
                 
                 value = random.randint(0, len(files)-1)
@@ -31,10 +30,7 @@ class Game(IceGauntlet.Game, Ice.Application):
             
             return json.dumps(data)
 
-
-        
-       
-class MapManaging(IceGauntlet.MapManaging, Ice.Application):
+class RoomManager(IceGauntlet.RoomManager, Ice.Application):
 
     def publish(self, token, roomData, argv):
         proxy = self.communicator().stringToProxy(sys.argv[1])
@@ -102,7 +98,7 @@ class MapManaging(IceGauntlet.MapManaging, Ice.Application):
 class Server(Ice.Application):
     def run(self, argv):
         MMbroker = self.communicator()
-        MMservant = MapManaging()
+        MMservant = RoomManager()
         
         MMadapter = MMbroker.createObjectAdapter("MMAdapter")
         MMproxy = MMadapter.add(MMservant, MMbroker.stringToIdentity("mapmanaging1"))
@@ -110,7 +106,7 @@ class Server(Ice.Application):
         print(MMproxy, flush = True)
 
         Gbroker = self.communicator()
-        Gservant = Game()
+        Gservant = Dungeon()
         
         Gadapter = Gbroker.createObjectAdapter("GameAdapter")
         Gproxy = Gadapter.add(Gservant, Gbroker.stringToIdentity("game1"))

@@ -6,6 +6,8 @@ module IceGauntlet {
 
 	exception RoomNotExists {}
 
+	exception WrongRoomFormat {}
+
 	//Interfaz de autenticación
 	interface Authentication {
 		//Método para cambiar contraseña
@@ -19,15 +21,15 @@ module IceGauntlet {
 	};
 
 	//Interfaz de gestión de mapas
-	interface MapManaging {
+	interface RoomManager {
 		//Metodo publicar mapa
-		void publish (string token, string roomData) throws Unauthorized, RoomAlreadyExists;
+		void publish (string token, string roomData) throws Unauthorized, RoomAlreadyExists, WrongRoomFormat;
 		//Metodo eliminar mapa
-		void remove (string token, string roomData) throws Unauthorized, RoomNotExists;
+		void remove (string token, string roomName) throws Unauthorized, RoomNotExists;
 	};
 
 	//Interfaz de juego
-	interface Game {
+	interface Dungeon {
 		//Metodo para obtener la room
 		string getRoom() throws RoomNotExists;
 	};

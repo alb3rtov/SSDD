@@ -20,8 +20,13 @@ select opt in jugar getroom salir; do
 			if [[ -d $mapsDir ]] 
 			then
 				if [ -z "$(ls -A $mapsDir)" ]; then
-					echo "Empty"
+					echo "No tienes ningun mapa en local, utiliza la opcion 2 para descargarte un mapa del servidor"
 				else
+					maps=`ls ~/.icegauntletmaps`
+					echo ""
+					echo "Mapas disponibles:"
+					echo "$maps"
+					echo ""
 					echo "Introduce el nombre del mapa: "
 					read map
 					
@@ -36,6 +41,7 @@ select opt in jugar getroom salir; do
 			;;
 		getroom)
 			./src/Client.py --Ice.Config=config/Client.config "$0" "$1"
+			echo "Descargado mapa del servidor"
 			mapas=`ls ~/.icegauntletmaps`
 			echo ""
 			echo "Mapas disponibles:"

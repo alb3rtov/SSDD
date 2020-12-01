@@ -15,7 +15,7 @@ class GameToolClient(Ice.Application):
     def getRoom(self, argv):
         
         proxy = self.communicator().stringToProxy(argv[2])
-        gauntlet = IceGauntlet.GamePrx.checkedCast(proxy)
+        gauntlet = IceGauntlet.DungeonPrx.checkedCast(proxy)
         
         if not gauntlet:
             raise RumTimeError('Invalid proxy')
@@ -42,7 +42,7 @@ class RoomToolClient(Ice.Application):
     def mapManagingProxy(self, argv):
         
         proxy = self.communicator().stringToProxy(argv[2])
-        gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
+        gauntlet = IceGauntlet.RoomManagerPrx.checkedCast(proxy)
         
         if not gauntlet:
             raise RunTimeError('Invalid proxy')

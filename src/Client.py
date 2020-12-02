@@ -65,7 +65,6 @@ class AuthenticationToolClient(Ice.Application):
 class Client(Ice.Application):
 
     def run (self, argv):
-
         if (argv[1] == './upload_map.sh'):
            
             roomToolClient = RoomToolClient()
@@ -94,37 +93,30 @@ class Client(Ice.Application):
 
             # Print user new token
             print(gauntlet.getNewToken(username, m.hexdigest()))
-        
-        elif (argv[1] == './run_game.sh'):
-            gameToolClient = GameToolClient()
-            gauntlet = gameToolClient.getRoom(argv)
-            
-            #proxy = self.communicator().stringToProxy(argv[2])
-            #gauntlet = IceGauntlet.GamePrx.checkCast(proxy)
-            
-            #if not gaunlet:
-            #    raise RunTimeError('Invalid proxy')
-            
-            #gauntlet.getRoom()    
 
-        #roomToolClient = RoomToolClient()
-        #proxy = self.communicator().stringToProxy(argv[1])
-        #gauntlet = IceGauntlet.MapManagingPrx.checkedCast(proxy)
+        elif (argv[1] == './change_pass.sh'):
+            authenticationToolClient = AuthenticationToolClient()
+            gauntlet = authenticationToolClient.authenticationProxy(argv)
+            
+            username = input("Enter username: ")
+            #current_password = "holaaa"
+            current_password = getpass.getpass("Enter current password: ")
+            new_password = getpass.getpass("Enter new password: ")
+            
+            m = hashlib.sha256()
+            m.update(new_password.encode('utf8'))
 
-        #if not gauntlet:
-        #    raise RunTimeError('Invalid proxy')
+            n = hashlib.sha256()
+            n.update(current_password.encode('utf8'))
 
-        #token = roomToolClient.getNewToken(argv) 
-        #print(token) #DEBUG 
-        
-        #roomData = input("Enter roomData (Path of JSON file): ");
-        
-        #with open(roomData) as f:
-        #    data = json.load(f)
-    
-        #gauntlet.publish(token, json.dumps(data))
-         
-        #roomToolClient.getRoom(argv)
+            #print(m.hexdigest()) 
+            #print(n.hexdigest())
+            
+            gauntlet.changePassword(username, current_password, m.hexdigest())
+            
+        #elif (argv[1] == './auth_user'):
+            #gameToolClient = GameToolClient()
+            #gauntlet = gameToolClient.getRoom(argv)
 
         return 0
 

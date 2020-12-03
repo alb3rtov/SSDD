@@ -22,13 +22,11 @@ En la raíz del repositorio existen una serie de scripts en bash para la ejecuci
 ```bash
   ./upload_map.sh <Proxy servicio de mapas> <token> <ruta archivo mapa (.JSON)>
 ```
-- auth_user.sh : Ejecuta una instancia del cliente para autenticarse en el servidor de autenticación. Devuelve el token del usuario.
+- get_new_token : Ejecuta una instancia del cliente para autenticarse en el servidor de autenticación. Devuelve el token del usuario.
 ```bash
-  ./auth_user.sh <Proxy servicio autenticacion>
+  ./get_new_token <Usuario> <Constraseña> <Proxy servicio autenticacion>
 ```
-   ### Ejemplo autenticacion en el servidor
-   ![Alt Text](https://i.imgur.com/caU3ARR.gif)
-   
+
 - run_game.sh : Muestra un menú para ejecutar el juego local, y para conseguir una room del servicio de juego.
 ```bash
   ./run_game.sh <Proxy servicio juego>

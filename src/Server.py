@@ -16,7 +16,8 @@ class Dungeon(IceGauntlet.Dungeon, Ice.Application):
 
         #comprobar que hay mapas en maps/
         if (not os.listdir("maps/")):
-            print("Directory vacio, debe subir mapa")
+            #print("Directory vacio, debe subir mapa")
+            raise IceGauntlet.Unauthorized()
         else:
             #Elegir aleatoriamente un mapa
             for root, dirs, files in os.walk('maps/'):
@@ -24,7 +25,7 @@ class Dungeon(IceGauntlet.Dungeon, Ice.Application):
                 value = random.randint(0, len(files)-1)
                 filename = 'maps/' + files[value]
 
-            print(filename)
+            #print(filename)
             with open(filename) as f:
                 data = json.load(f)
             
@@ -39,11 +40,11 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         if not gauntlet:
             raise RunTimeError('Invalid proxy')
     
-        print("token: {0}".format(token))
+        #print("token: {0}".format(token))
   
         if (gauntlet.isValid(token)):
 
-            print("El token es valido")
+            #print("El token es valido")
 
             filename = "tokenRoom.json"
             
@@ -76,7 +77,7 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
                         with open(roomName, 'w') as f:
                             json.dump(room_json,f)
                             
-                        print("mapa reemplazado")
+                        #print("mapa reemplazado")
                         sys.stdout.flush()
                         
                     else: # no eres el dueño del mapa
@@ -94,33 +95,34 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
                     sys.stdout.flush()
 
         else:
-            print("El token es no es valido")
+            raise IceGauntlet.Unauthorized()
+            #print("El token es no es valido")
             
 class Server(Ice.Application):
     def run(self, argv):
-        MMbroker = self.communicator()
-        MMservant = RoomManager()
+        RMbroker = self.communicator()
+        RMservant = RoomManager()
         
-        MMadapter = MMbroker.createObjectAdapter("MMAdapter")
-        MMproxy = MMadapter.add(MMservant, MMbroker.stringToIdentity("mapmanaging1"))
+        RMadapter = RMbroker.createObjectAdapter("RoomManagerAdapter")
+        RMproxy = RMadapter.add(RMservant, RMbroker.stringToIdentity("RoomManager"))
 
-        print(MMproxy, flush = True)
+        print(RMproxy, flush = True)
 
-        Gbroker = self.communicator()
-        Gservant = Dungeon()
+        Dbroker = self.communicator()
+        Dservant = Dungeon()
         
-        Gadapter = Gbroker.createObjectAdapter("GameAdapter")
-        Gproxy = Gadapter.add(Gservant, Gbroker.stringToIdentity("game1"))
+        Dadapter = Dbroker.createObjectAdapter("DungeonAdapter")
+        Dproxy = Dadapter.add(Dservant, Dbroker.stringToIdentity("Dungeon"))
 
-        print(Gproxy, flush = True)
+        print(Dproxy, flush = True)
     
-        MMadapter.activate()
-        Gadapter.activate()
+        RMadapter.activate()
+        Dadapter.activate()
         
         self.shutdownOnInterrupt()
         
-        MMbroker.waitForShutdown()
-        Gbroker.waitForShutdown()
+        RMbroker.waitForShutdown()
+        Dbroker.waitForShutdown()
 
         return 0
 

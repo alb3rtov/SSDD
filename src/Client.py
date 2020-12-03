@@ -54,7 +54,7 @@ class AuthenticationToolClient(Ice.Application):
     
     def authenticationProxy(self, argv):
 
-        proxy = self.communicator().stringToProxy(argv[2])
+        proxy = self.communicator().stringToProxy(argv[3])
         gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
 
         if not gauntlet:
@@ -81,18 +81,23 @@ class Client(Ice.Application):
             #do something
             #gauntlet.remove(argv[3], roomName)
 
-        elif (argv[1] == './auth_user.sh'):
+
+        #elif (argv[1] == './auth_user.sh'): 
+        elif (argv[1] == '-t'):
             authenticationToolClient = AuthenticationToolClient()
             gauntlet = authenticationToolClient.authenticationProxy(argv)
 
-            username = input("Enter username: ")
-            password = getpass.getpass("Enter password: ")
+            #username = input("Enter username: ")
+            password = getpass.getpass("Enter password:")
 
             m = hashlib.sha256()
             m.update(password.encode('utf8'))
+            
+            #print("Password:")
+            #print(m.hexdigest())
 
             # Print user new token
-            print(gauntlet.getNewToken(username, m.hexdigest()))
+            print(gauntlet.getNewToken(argv[2], m.hexdigest()))
 
         elif (argv[1] == './change_pass.sh'):
             authenticationToolClient = AuthenticationToolClient()
@@ -108,16 +113,11 @@ class Client(Ice.Application):
 
             n = hashlib.sha256()
             n.update(current_password.encode('utf8'))
-
             #print(m.hexdigest()) 
             #print(n.hexdigest())
             
             gauntlet.changePassword(username, current_password, m.hexdigest())
             
-        #elif (argv[1] == './auth_user'):
-            #gameToolClient = GameToolClient()
-            #gauntlet = gameToolClient.getRoom(argv)
-
         return 0
 
 sys.exit(Client().main(sys.argv))

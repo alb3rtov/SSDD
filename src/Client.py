@@ -64,8 +64,16 @@ class AuthenticationToolClient(Ice.Application):
 
 class Client(Ice.Application):
 
+    def generateHashSha256(self, password):
+
+        m = hashlib.sha256()
+        m.update(password.encode('utf8'))
+        
+        return m.hexdigest()
+    
     def run (self, argv):
-        if (argv[1] == './upload_map.sh'):
+
+        if (argv[1] == 'upload'):
            
             roomToolClient = RoomToolClient()
             gauntlet = roomToolClient.mapManagingProxy(argv)
@@ -78,48 +86,30 @@ class Client(Ice.Application):
 
             gauntlet.publish(argv[3], json.dumps(data))
 
-        elif (argv[1] == './delete_map.sh'):
+        elif (argv[1] == 'delete'):
             roomToolClient = RoomToolClient()
             gauntlet = roomToolClient.mapManagingProxy(argv)
             #do something
             #gauntlet.remove(argv[3], roomName)
 
-
-        #elif (argv[1] == './auth_user.sh'): 
         elif (argv[1] == '-t'):
             authenticationToolClient = AuthenticationToolClient()
             gauntlet = authenticationToolClient.authenticationProxy(argv)
 
-            #username = input("Enter username: ")
             password = getpass.getpass("Enter password:")
 
-            m = hashlib.sha256()
-            m.update(password.encode('utf8'))
-            
-            #print("Password:")
-            #print(m.hexdigest())
-
             # Print user new token
-            print(gauntlet.getNewToken(argv[2], m.hexdigest()))
+            print(gauntlet.getNewToken(argv[2], self.generateHashSha256(password)))
 
-        elif (argv[1] == './change_pass.sh'):
+        elif (argv[1] == 'changepass'):
             authenticationToolClient = AuthenticationToolClient()
             gauntlet = authenticationToolClient.authenticationProxy(argv)
             
             username = input("Enter username: ")
-            #current_password = "holaaa"
             current_password = getpass.getpass("Enter current password: ")
             new_password = getpass.getpass("Enter new password: ")
             
-            m = hashlib.sha256()
-            m.update(new_password.encode('utf8'))
-
-            n = hashlib.sha256()
-            n.update(current_password.encode('utf8'))
-            #print(m.hexdigest()) 
-            #print(n.hexdigest())
-            
-            gauntlet.changePassword(username, current_password, m.hexdigest())
+            gauntlet.changePassword(username, self.generateHashSha256(current_password), self.generateHashSha256(new_password))
             
         return 0
 

@@ -80,7 +80,8 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
                         sys.stdout.flush()
                         
                     else: # no eres el dueño del mapa
-                        print('RoomAlreadyExists')
+                        #print('RoomAlreadyExists')
+                        raise IceGauntlet.RoomAlreadyExists()
                 else:
                     data[roomName] = token
 

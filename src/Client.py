@@ -71,7 +71,10 @@ class Client(Ice.Application):
             gauntlet = roomToolClient.mapManagingProxy(argv)
 
             with open (argv[4]) as f:
-                data = json.load(f)
+                try:
+                    data = json.load(f)
+                except:
+                    raise IceGauntlet.WrongRoomFormat()
 
             gauntlet.publish(argv[3], json.dumps(data))
 

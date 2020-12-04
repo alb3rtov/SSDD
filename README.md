@@ -14,9 +14,9 @@ https://github.com/alb3rtov/ssdd
 
 # Ejecución:
 En la raíz del repositorio existen una serie de scripts en bash para la ejecución del servidor y cliente.
-- run_map_server.sh: Arranca el servidor de mapas y de juego. <br>
+- run_server.sh: Arranca el servidor de mapas y de juego. En nuestro caso, hemos decidido implementar un solo servidor que será el de mapas y el de juego. <br>
 ```bash
-  ./run_map_server.sh <Proxy servivio de autenticacion>
+  ./run_server.sh <Proxy servivio de autenticacion>
 ```
 - upload_map.sh: Ejecuta un cliente para subir un mapa al servidor de mapas.
 ```bash

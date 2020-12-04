@@ -54,7 +54,7 @@ class AuthenticationToolClient(Ice.Application):
     
     def authenticationProxy(self, argv):
 
-        proxy = self.communicator().stringToProxy(argv[3])
+        proxy = self.communicator().stringToProxy(argv)
         gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
 
         if not gauntlet:
@@ -94,7 +94,7 @@ class Client(Ice.Application):
 
         elif (argv[1] == '-t'):
             authenticationToolClient = AuthenticationToolClient()
-            gauntlet = authenticationToolClient.authenticationProxy(argv)
+            gauntlet = authenticationToolClient.authenticationProxy(argv[3])
 
             password = getpass.getpass("Enter password:")
 
@@ -103,7 +103,7 @@ class Client(Ice.Application):
 
         elif (argv[1] == 'changepass'):
             authenticationToolClient = AuthenticationToolClient()
-            gauntlet = authenticationToolClient.authenticationProxy(argv)
+            gauntlet = authenticationToolClient.authenticationProxy(argv[2])
             
             username = input("Enter username: ")
             current_password = getpass.getpass("Enter current password: ")
@@ -112,6 +112,6 @@ class Client(Ice.Application):
             gauntlet.changePassword(username, self.generateHashSha256(current_password), self.generateHashSha256(new_password))
             
         return 0
-
+#  self.generateHashSha256(current_password)
 sys.exit(Client().main(sys.argv))
 

@@ -67,6 +67,7 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
                 sys.stdout.flush()
 
             else:
+                print("se mete aqui")
                 with open(filename) as file:
                     data = json.load(file)
 
@@ -107,14 +108,22 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         #print("token: {0}".format(token))
 
         if (gauntlet.isValid(token)):
-        	filename = "tokenRoom.json"
-        	with open(filename) as json_file:
-        		data = json.load(json_file)
-        		for element in data:
-        			if roomName in data:
-        				del element[roomName]
-        	with open(filename, 'w') as json_file:
-        		data = json.dump(data, json_file)
+            filename = "tokenRoom.json"
+                
+            with open(filename) as file:
+                print(file)
+                data = json.load(file)
+            
+
+                    #print(file)
+                #    data = json.load(file)
+                    
+                #    for element in data:
+                #        if roomName in data:
+                #            del element[roomName]
+        	
+                #with open(filename, 'w') as json_file:
+        	#	data = json.dump(data, json_file)
 
 class Server(Ice.Application):
     def run(self, argv):

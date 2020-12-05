@@ -53,7 +53,7 @@ class RoomToolClient(Ice.Application):
 class AuthenticationToolClient(Ice.Application):
     
     def authenticationProxy(self, argv):
-
+        
         proxy = self.communicator().stringToProxy(argv)
         gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
 

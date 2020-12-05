@@ -10,7 +10,9 @@ import sys
 import atexit
 import logging
 import argparse
-
+import Ice
+Ice.loadSlice('../slice.ice')
+import IceGauntlet
 import game
 import game.common
 import game.screens
@@ -24,6 +26,26 @@ BAD_COMMAND_LINE = 1
 DEFAULT_ROOM = 'tutorial.json'
 DEFAULT_HERO = game.common.HEROES[0]
 
+class RemoteDungeonMap(IceGauntlet.Dungeon, Ice.Application):
+
+    def run(self, argv):
+       
+        print(argv)
+        proxy = self.communicator().stringToProxy(argv)
+        gauntlet = IceGauntlet.DungeonPrx.checkedCast(proxy)
+
+        if not gauntlet:
+            raise RunTimeError('Invalid proxy')
+        
+        return 0
+
+    #def next_room(self):
+    #    if self._levels_:
+    #        return self.levels_.pop()
+
+    #def finished(self):
+    #    return not self._levels_
+
 
 @atexit.register
 # pylint: disable=W0613
@@ -35,17 +57,18 @@ def bye(*args, **kwargs):
 def parse_commandline():
     '''Parse and check commandline'''
     parser = argparse.ArgumentParser('IceDungeon Local Game')
-    parser.add_argument('LEVEL', nargs='+', default=[DEFAULT_ROOM], help='List of levels')
+    #parser.add_argument('LEVEL', nargs='+', default=[DEFAULT_ROOM], help='List of levels')
+    parser.add_argument('--proxy', help='Proxy game')
     parser.add_argument(
         '-p', '--player', default=DEFAULT_HERO, choices=game.common.HEROES,
         dest='hero', help='Hero to play with'
     )
     options = parser.parse_args()
 
-    for level_file in options.LEVEL:
-        if not game.assets.search(level_file):
-            logging.error(f'Level "{level_file}" not found!')
-            return None
+    #for level_file in options.LEVEL:
+    #    if not game.assets.search(level_file):
+    #        logging.error(f'Level "{level_file}" not found!')
+    #        return None
     return options
 
 
@@ -55,8 +78,20 @@ def main():
     if not user_options:
         return BAD_COMMAND_LINE
 
+    #game.pyxeltools.initialize() 
+    
+    #dungeon = game.DungeonMap(user_options.LEVEL)
+    #print(user_options.proxy)
+    #dungeon = RemoteDungeonMap(user_options.proxy)
+    print("va a entrar")
+    dungeon = RemoteDungeonMap().run(user_options.proxy)
+    #print(user_options.proxy)
+    #dungeonn.run(user_options.proxy)    
+
     game.pyxeltools.initialize()
-    dungeon = game.DungeonMap(user_options.LEVEL)
+    #dungeon.main(user_options.proxy)
+
+    
     gauntlet = game.Game(user_options.hero, dungeon)
     gauntlet.add_state(game.screens.TileScreen, game.common.INITIAL_SCREEN)
     gauntlet.add_state(game.screens.StatsScreen, game.common.STATUS_SCREEN)

@@ -114,7 +114,7 @@ class Server(Ice.Application):
         Dadapter = Dbroker.createObjectAdapter("DungeonAdapter")
         Dproxy = Dadapter.add(Dservant, Dbroker.stringToIdentity("Dungeon"))
 
-        print(Dproxy, flush = True)
+        os.system("echo '" + str(Dproxy) + "' | tee config/game-proxy.out > /dev/null")
     
         RMadapter.activate()
         Dadapter.activate()

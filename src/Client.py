@@ -7,8 +7,10 @@ import getpass
 import json
 import os
 import hashlib
-Ice.loadSlice('slice.ice')
+Ice.loadSlice('icegauntlet.ice')
 import IceGauntlet
+
+JSON_EXTENSION = ".json"
 
 class GameToolClient(Ice.Application):
     
@@ -30,7 +32,7 @@ class GameToolClient(Ice.Application):
         if (not os.path.isdir(path)):
             os.system('mkdir ' + path)
 
-        roomName = path + '/' + (str(room_json['room'])).replace(" ", "_") + '.json'
+        roomName = path + '/' + (str(room_json['room'])).replace(" ", "_") + JSON_EXTENSION
         #print(roomName)
         with open(roomName, 'w') as f:
             json.dump(room_json,f)
@@ -111,6 +113,6 @@ class Client(Ice.Application):
             gauntlet.changePassword(username, self.generateHashSha256(current_password), self.generateHashSha256(new_password))
             
         return 0
-#  self.generateHashSha256(current_password)
+
 sys.exit(Client().main(sys.argv))
 

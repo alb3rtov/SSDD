@@ -6,26 +6,27 @@ import Ice
 import json
 import os
 import random
-Ice.loadSlice('slice.ice')
+Ice.loadSlice('icegauntlet.ice')
 import IceGauntlet
 
+FILE_TOKEN_ROOM = "tokenRoom.json" 
+JSON_EXTENSION = ".json"
+MAPS_PATH = "maps/"
 
 class Dungeon(IceGauntlet.Dungeon, Ice.Application):
 
     def getRoom(self, argv):
 
         #comprobar que hay mapas en maps/
-        if (not os.listdir("maps/")):
-            #print("Directory vacio, debe subir mapa")
+        if (not os.listdir(MAPS_PATH)):
             raise IceGauntlet.Unauthorized()
         else:
             #Elegir aleatoriamente un mapa
-            for root, dirs, files in os.walk('maps/'):
+            for root, dirs, files in os.walk(MAPS_PATH):
 
                 value = random.randint(0, len(files)-1)
-                filename = 'maps/' + files[value]
+                filename = MAPS_PATH + files[value]
 
-            #print(filename)
             with open(filename) as f:
                 data = json.load(f)
 
@@ -40,59 +41,42 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         if not gauntlet:
             raise RunTimeError('Invalid proxy')
 
-        #print("token: {0}".format(token))
-
         if (gauntlet.isValid(token)):
 
-            #print("El token es valido")
-
-            filename = "tokenRoom.json"
-
             room_json = json.loads(roomData) #Loads file as a string
-            roomName = 'maps/' + (str(room_json['room'])).replace(" ", "_") + '.json'
-
+            roomName = MAPS_PATH + (str(room_json['room'])).replace(" ", "_") + JSON_EXTENSION
             #Si el archivo no existe, nuevo.
-            if (not os.path.isfile(filename)):
+            if (not os.path.isfile(FILE_TOKEN_ROOM)):
                 data = {}
 
                 data[roomName] = token
 
-                with open(filename, 'w') as f:
+                with open(FILE_TOKEN_ROOM, 'w') as f:
                     json.dump(data,f, indent=4)
 
                 #Publish the .json file in maps folder
                 with open(roomName, 'w') as f:
                     json.dump(room_json,f) #Dictionary to json file
 
-                sys.stdout.flush()
-
             else:
-                with open(filename) as file:
+                with open(FILE_TOKEN_ROOM) as file:
                     data = json.load(file)
 
                 if roomName in data:
-
                     if data[roomName] == token: # eres el dueño del mapa
-
                         with open(roomName, 'w') as f:
                             json.dump(room_json,f)
 
-                        #print("mapa reemplazado")
-                        sys.stdout.flush()
-
                     else: # no eres el dueño del mapa
-                        #print('RoomAlreadyExists')
                         raise IceGauntlet.RoomAlreadyExists()
                 else:
                     data[roomName] = token
 
-                    with open(filename, 'w') as f:
+                    with open(FILE_TOKEN_ROOM, 'w') as f:
                         json.dump(data, f, indent=4)
 
                     with open(roomName, 'w') as f:
                         json.dump(room_json,f)
-
-                    sys.stdout.flush()
 
         else:
             raise IceGauntlet.Unauthorized()
@@ -105,21 +89,23 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
             raise RunTimeError('Invalid proxy')
 
         if (gauntlet.isValid(token)):
-            filename = "tokenRoom.json"
-                
-            with open(filename, "r") as f:
+            #filename = "tokenRoom.json"
+           
+            fullRoomName = MAPS_PATH + roomName.replace(" ", "_") + JSON_EXTENSION
+            
+            with open(FILE_TOKEN_ROOM, "r") as f:
                 lines = f.readlines()
 
-            with open(filename, "w") as f:
-                for line in lines:
-                    
-                    if not (roomName in line and token in line):
-                       f.write(line)
+            with open(FILE_TOKEN_ROOM, "w") as f:
+                
+                for line in lines:    
+                    if not (fullRoomName in line and token in line):
+                        f.write(line)
                     else:
-                        os.system('rm ' + roomName)
+                        os.system('rm ' + fullRoomName)
 
-            if (os.stat(filename).st_size == 3):
-                os.system('rm ' + filename)
+            if (os.stat(FILE_TOKEN_ROOM).st_size <= 3):
+                os.system('rm ' + FILE_TOKEN_ROOM)
     
 class Server(Ice.Application):
     def run(self, argv):

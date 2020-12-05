@@ -16,19 +16,24 @@ MAPS_PATH = "maps/"
 class Dungeon(IceGauntlet.Dungeon, Ice.Application):
 
     def getRoom(self, argv):
-
+        
         #comprobar que hay mapas en maps/
-        if (not os.listdir(MAPS_PATH)):
-            raise IceGauntlet.Unauthorized()
+        
+        if (not os.listdir(MAPS_PATH) or len(os.listdir(MAPS_PATH)) == 1):
+            raise IceGauntlet.RoomNotExists()
         else:
             #Elegir aleatoriamente un mapa
             for root, dirs, files in os.walk(MAPS_PATH):
 
                 value = random.randint(0, len(files)-1)
+                print(files[value])
                 filename = MAPS_PATH + files[value]
-
+                print(filename)
+            
             with open(filename) as f:
                 data = json.load(f)
+
+            #print(type(json.dumps(data)))
 
             return json.dumps(data)
 

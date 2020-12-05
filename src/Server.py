@@ -96,7 +96,7 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
 
         else:
             raise IceGauntlet.Unauthorized()
-            #print("El token es no es valido")
+    
     def remove(self, token, roomName, argv):
         proxy = self.communicator().stringToProxy(sys.argv[1])
         gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
@@ -104,20 +104,23 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         if not gauntlet:
             raise RunTimeError('Invalid proxy')
 
-        #print("token: {0}".format(token))
-
         if (gauntlet.isValid(token)):
             filename = "tokenRoom.json"
                 
-            with open(filename, "r") as file:
-                data = json.readlines()
-            for element in data:
-                if roomName in data:
-                    if data[roomName] == token:
-                        del roomName
-                        print(data)
+            with open(filename, "r") as f:
+                lines = f.readlines()
 
+            with open(filename, "w") as f:
+                for line in lines:
+                    
+                    if not (roomName in line and token in line):
+                       f.write(line)
+                    else:
+                        os.system('rm ' + roomName)
 
+            if (os.stat(filename).st_size == 3):
+                os.system('rm ' + filename)
+    
 class Server(Ice.Application):
     def run(self, argv):
         RMbroker = self.communicator()

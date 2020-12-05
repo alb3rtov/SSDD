@@ -43,7 +43,7 @@ class RoomToolClient(Ice.Application):
         
         proxy = self.communicator().stringToProxy(argv[2])
         gauntlet = IceGauntlet.RoomManagerPrx.checkedCast(proxy)
-        
+
         if not gauntlet:
             raise RunTimeError('Invalid proxy')
         
@@ -89,8 +89,7 @@ class Client(Ice.Application):
         elif (argv[1] == 'delete'):
             roomToolClient = RoomToolClient()
             gauntlet = roomToolClient.mapManagingProxy(argv)
-            #do something
-            #gauntlet.remove(argv[3], roomName)
+            gauntlet.remove(argv[3], argv[4])
 
         elif (argv[1] == '-t'):
             authenticationToolClient = AuthenticationToolClient()

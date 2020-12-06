@@ -40,7 +40,7 @@ En la raíz del repositorio existen una serie de scripts en bash para la ejecuci
 ```
 - change_pass.sh : Script para cambiar la contraseña del usuario.
 ```bash
-  ./run_game.sh <Proxy servicio autenticacion>
+  ./change_pass.sh <Proxy servicio autenticacion>
 ```
 
    <!-- ### Ejemplo método getRoom

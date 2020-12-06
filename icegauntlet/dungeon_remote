@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # pylint: disable=W1203
+# pylint: disable=E0401
+# pylint: disable=C0413
 
 '''
-    ICE Gauntlet LOCAL GAME
+    ICE Gauntlet REMOTE GAME
 '''
-import json
 import sys
 import atexit
-import logging
 import argparse
 import Ice
 Ice.loadSlice('icegauntlet.ice')
@@ -27,34 +27,31 @@ DEFAULT_ROOM = 'tutorial.json'
 DEFAULT_HERO = game.common.HEROES[0]
 
 class RemoteDungeonMap(Ice.Application):
-   
+    """ Get the room maps """
     def __init__(self, game_proxy):
         self.game_server = game_proxy
         self.game_proxy = None
 
     def main(self):
-       
         proxy = self.communicator().stringToProxy(self.game_server)
         self.game_proxy = IceGauntlet.DungeonPrx.checkedCast(proxy)
 
         if not self.game_proxy:
-            raise RunTimeError('Invalid proxy')
+            raise RuntimeError('Invalid proxy')
 
-        #self.next_room(gauntlet)
         return 0
 
     @property
     def next_room(self):
-        
-        #bucle condicion finished
-        roomData = self.game_proxy.getRoom()
+        """ Get the next room provided by game server """
+        room_data = self.game_proxy.getRoom()
 
-        return roomData
-    
+        return room_data
+
     @property
     def finished(self):
+        """ Atribute finished """
         return self
-        
 
 @atexit.register
 # pylint: disable=W0613
@@ -76,7 +73,7 @@ def parse_commandline():
     return options
 
 class Client(Ice.Application):
-
+    """ Game client """
     def run(self, argv):
         '''Start game according to commandline'''
         user_options = parse_commandline()
@@ -85,7 +82,7 @@ class Client(Ice.Application):
 
         dungeon = RemoteDungeonMap(user_options.proxy)
         dungeon.main()
-        gauntlet = game.Game(user_options.hero, dungeon) 
+        gauntlet = game.Game(user_options.hero, dungeon)
         game.pyxeltools.initialize()
         gauntlet.add_state(game.screens.TileScreen, game.common.INITIAL_SCREEN)
         gauntlet.add_state(game.screens.StatsScreen, game.common.STATUS_SCREEN)

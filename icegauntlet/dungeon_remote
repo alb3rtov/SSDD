@@ -5,7 +5,6 @@
 '''
     ICE Gauntlet LOCAL GAME
 '''
-import time
 import json
 import sys
 import atexit
@@ -28,30 +27,34 @@ DEFAULT_ROOM = 'tutorial.json'
 DEFAULT_HERO = game.common.HEROES[0]
 
 class RemoteDungeonMap(Ice.Application):
-    
-    def next_room(self, game_server):
-        
-        #bucle condicion finished
-        roomData = game_server.getRoom()
-        print(roomData)
-        #roomJson = json.loads(roomData)
-        #print(roomJson)
-        
-        #print(roomJson)
-        return roomData
+   
+    def __init__(self, game_proxy):
+        self.game_server = game_proxy
+        self.game_proxy = None
 
-    def main(self, game_proxy):
+    def main(self):
        
-        proxy = self.communicator().stringToProxy(game_proxy)
-        gauntlet = IceGauntlet.DungeonPrx.checkedCast(proxy)
+        proxy = self.communicator().stringToProxy(self.game_server)
+        self.game_proxy = IceGauntlet.DungeonPrx.checkedCast(proxy)
 
-        if not gauntlet:
+        if not self.game_proxy:
             raise RunTimeError('Invalid proxy')
 
-        self.next_room(gauntlet)
-    
-        
+        #self.next_room(gauntlet)
         return 0
+
+    @property
+    def next_room(self):
+        
+        #bucle condicion finished
+        roomData = self.game_proxy.getRoom()
+
+        return roomData
+    
+    @property
+    def finished(self):
+        return self
+        
 
 @atexit.register
 # pylint: disable=W0613
@@ -63,7 +66,6 @@ def bye(*args, **kwargs):
 def parse_commandline():
     '''Parse and check commandline'''
     parser = argparse.ArgumentParser('IceDungeon Local Game')
-    #parser.add_argument('LEVEL', nargs='+', default=[DEFAULT_ROOM], help='List of levels')
     parser.add_argument('--proxy', help='Proxy game')
     parser.add_argument(
         '-p', '--player', default=DEFAULT_HERO, choices=game.common.HEROES,
@@ -71,10 +73,6 @@ def parse_commandline():
     )
     options = parser.parse_args()
 
-    #for level_file in options.LEVEL:
-    #    if not game.assets.search(level_file):
-    #        logging.error(f'Level "{level_file}" not found!')
-    #        return None
     return options
 
 class Client(Ice.Application):
@@ -85,22 +83,10 @@ class Client(Ice.Application):
         if not user_options:
             return BAD_COMMAND_LINE
 
-        #game.pyxeltools.initialize() 
-    
-        #dungeon = game.DungeonMap(user_options.LEVEL)
-        #print(user_options.proxy)
-        #dungeon = RemoteDungeonMap(user_options.proxy)
-        print("va a entrar")
-        dungeon = RemoteDungeonMap()
-        prueba = dungeon.main(user_options.proxy)
-        #dungeonn.run(user_options.proxy)    
-        #dungeon.main(user_options.proxy)
-        
+        dungeon = RemoteDungeonMap(user_options.proxy)
+        dungeon.main()
         gauntlet = game.Game(user_options.hero, dungeon) 
-        
-        
         game.pyxeltools.initialize()
-
         gauntlet.add_state(game.screens.TileScreen, game.common.INITIAL_SCREEN)
         gauntlet.add_state(game.screens.StatsScreen, game.common.STATUS_SCREEN)
         gauntlet.add_state(game.screens.GameScreen, game.common.GAME_SCREEN)
@@ -111,6 +97,3 @@ class Client(Ice.Application):
         return EXIT_OK
 
 sys.exit(Client().main(sys.argv))
-
-#if __name__ == '__main__':
-#    sys.exit(main())

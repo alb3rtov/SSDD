@@ -130,9 +130,10 @@ def load_json_map(jsonfile):
                 src_map = json.load(contents)
             except Exception as error:
                 raise ValueError('Wrong JSON data: {}'.format(error))
-
+    
     map_data = src_map.get('data', None)
     map_name = src_map.get('room', os.path.basename(jsonfile))
+    
     if not map_data:
         raise ValueError('JSON file does not have a data field')
     return map_name, map_data

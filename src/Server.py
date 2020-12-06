@@ -24,16 +24,16 @@ class Dungeon(IceGauntlet.Dungeon, Ice.Application):
         else:
             #Elegir aleatoriamente un mapa
             for root, dirs, files in os.walk(MAPS_PATH):
-
+                
+                #Evitar que eliga el archivo .gitignore
                 value = random.randint(0, len(files)-1)
-                print(files[value])
+                while (files[value] == ".gitignore"):
+                    value = random.randint(0, len(files)-1)
+                
                 filename = MAPS_PATH + files[value]
-                print(filename)
             
             with open(filename) as f:
                 data = json.load(f)
-
-            #print(type(json.dumps(data)))
 
             return json.dumps(data)
 
@@ -89,6 +89,8 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
     def remove(self, token, roomName, argv):
         proxy = self.communicator().stringToProxy(sys.argv[1])
         gauntlet = IceGauntlet.AuthenticationPrx.checkedCast(proxy)
+        
+        isOwner = False
 
         if not gauntlet:
             raise RunTimeError('Invalid proxy')
@@ -107,7 +109,11 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
                     if not (fullRoomName in line and token in line):
                         f.write(line)
                     else:
+                        isOwner = True
                         os.system('rm ' + fullRoomName)
+            
+            if (not isOwner):
+                raise IceGauntlet.Unauthorized()
 
             if (os.stat(FILE_TOKEN_ROOM).st_size <= 3):
                 os.system('rm ' + FILE_TOKEN_ROOM)

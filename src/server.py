@@ -35,6 +35,7 @@ class Dungeon(IceGauntlet.Dungeon, Ice.Application):
             value = random.randint(0, len(files)-1)
 
         filename = MAPS_PATH + files[value]
+        print(filename)
 
         with open(filename) as file:
             data = json.load(file)
@@ -101,25 +102,34 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
             raise RuntimeError('Invalid proxy')
 
         if gauntlet.isValid(token):
-            full_room_name = MAPS_PATH + room_name.replace(" ", "_") + JSON_EXTENSION
 
-            with open(FILE_TOKEN_ROOM, "r") as file:
-                lines = file.readlines()
+            full_room_name = room_name.replace(" ", "_") + JSON_EXTENSION
+            files = os.listdir(MAPS_PATH)
 
-            with open(FILE_TOKEN_ROOM, "w") as file:
+            if full_room_name in files:
+                full_room_name_path = MAPS_PATH + full_room_name
 
-                for line in lines:
-                    if not (full_room_name in line and token in line):
-                        file.write(line)
-                    else:
-                        is_owner = True
-                        os.system('rm ' + full_room_name)
+                with open(FILE_TOKEN_ROOM, "r") as file:
+                    lines = file.readlines()
 
-            if not is_owner:
-                raise IceGauntlet.Unauthorized()
+                with open(FILE_TOKEN_ROOM, "w") as file:
 
-            if os.stat(FILE_TOKEN_ROOM).st_size <= 3:
-                os.system('rm ' + FILE_TOKEN_ROOM)
+                    for line in lines:
+                        if not (full_room_name_path in line and token in line):
+                            file.write(line)
+                        else:
+                            is_owner = True
+                            os.system('rm ' + full_room_name_path)
+
+                if not is_owner:
+                    raise IceGauntlet.Unauthorized()
+
+                if os.stat(FILE_TOKEN_ROOM).st_size <= 3:
+                    os.system('rm ' + FILE_TOKEN_ROOM)
+            else:
+                raise IceGauntlet.RoomNotExists()
+        else:
+            raise IceGauntlet.Unauthorized()
 
 class Server(Ice.Application):
     """ Class server initialize and create servants and brokers

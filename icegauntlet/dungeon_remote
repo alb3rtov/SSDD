@@ -31,7 +31,6 @@ class RemoteDungeonMap(Ice.Application):
     def __init__(self, game_proxy):
         self.game_server = game_proxy
         self.game_proxy = None
-        self.room_data = None
 
     def main(self):
         proxy = self.communicator().stringToProxy(self.game_server)
@@ -45,14 +44,14 @@ class RemoteDungeonMap(Ice.Application):
     @property
     def next_room(self):
         """ Get the next room provided by game server """
-        self.room_data = self.game_proxy.getRoom()
+        room_data = self.game_proxy.getRoom()
 
-        return self.room_data
+        return room_data
 
     @property
     def finished(self):
         """ Atribute finished """
-        return not self.room_data
+        return self
 
 @atexit.register
 # pylint: disable=W0613

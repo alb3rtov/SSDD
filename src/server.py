@@ -25,17 +25,14 @@ class Dungeon(IceGauntlet.Dungeon, Ice.Application):
     def getRoom(self, argv):
         """ Returns a dictionary with the data map and map name """
         #Check if there are maps in maps/
-        if len(os.listdir(MAPS_PATH)) <= 1:
+        if len(os.listdir(MAPS_PATH)) <= 0:
             raise IceGauntlet.RoomNotExists()
         # Choose random map
         files = os.listdir(MAPS_PATH)
         value = random.randint(0, len(files)-1)
 
-        while files[value] == ".gitignore":
-            value = random.randint(0, len(files)-1)
-
         filename = MAPS_PATH + files[value]
-        print(filename)
+        #print(filename)
 
         with open(filename) as file:
             data = json.load(file)

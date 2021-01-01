@@ -65,7 +65,7 @@ class Client(Ice.Application):
 
                 if (data.get('data') is None or data.get('room') is None):
                     raise IceGauntlet.WrongRoomFormat()
-
+            
             gauntlet.publish(argv[3], json.dumps(data))
 
         elif argv[1] == 'delete':

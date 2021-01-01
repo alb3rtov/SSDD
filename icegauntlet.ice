@@ -1,36 +1,64 @@
 module IceGauntlet {
 
-	exception Unauthorized {}
+  exception Unauthorized {};
+  exception RoomAlreadyExists {};
+  exception RoomNotExists {};
+  exception WrongRoomFormat {};
 
-	exception RoomAlreadyExists {}
+  sequence<string> roomList;
+  
+  struct Actor {
+    string actorId;
+    string attributes;
+  }
 
-	exception RoomNotExists {}
+  struct Item {
+    string itemId;
+    int itemType;
+    int positionX;
+    int positionY;
+  }
 
-	exception WrongRoomFormat {}
+  sequence<Actor> cast;
+  sequence<Item> objects;
+  sequence<byte> bytes;
 
-	//Interfaz de autenticación
-	interface Authentication {
-		//Método para cambiar contraseña
-		void changePassword (string user, string currentPassHash, string newPassHash) throws Unauthorized;
-		
-		//Método para obtener token de autorización
-		string getNewToken (string user, string passwordHash) throws Unauthorized;
+  interface Authentication {
+    void changePassword(string user, string currentPassHash, string newPassHash) throws Unauthorized;
+    string getNewToken(string user, string passwordHash) throws Unauthorized;
+    string getOwner(string token) throws Unauthorized;
+  };
 
-		//Método para comprobar si el token es válido
-		bool isValid (string token) throws Unauthorized;
-	};
+  interface RoomManager {
+    void publish(string token, string roomData) throws Unauthorized, RoomAlreadyExists, WrongRoomFormat;
+    void remove(string token, string roomName) throws Unauthorized, RoomNotExists;
+    roomList availableRooms();
+    string getRoom(string roomName) throws RoomNotExists;
+  };
 
-	//Interfaz de gestión de mapas
-	interface RoomManager {
-		//Metodo publicar mapa
-		void publish (string token, string roomData) throws Unauthorized, RoomAlreadyExists, WrongRoomFormat;
-		//Metodo eliminar mapa
-		void remove (string token, string roomName) throws Unauthorized, RoomNotExists;
-	};
+  // Event channel for Room Manager synchronization
+  interface RoomManagerSync {
+    void hello(RoomManager* manager, string managerId);
+    void announce(RoomManager* manager, string managerId);
+    void newRoom(string roomName, string managerId);
+    void removedRoom(string roomName);
+  };
 
-	//Interfaz de juego
-	interface Dungeon {
-		//Metodo para obtener la room
-		string getRoom() throws RoomNotExists;
-	};
+  // Event channel for DungeonArea synchronization
+  interface DungeonAreaSync {
+    void fireEvent(bytes event, string senderId);
+  };
+
+  interface DungeonArea {
+    string getEventChannel();
+    string getMap();
+    cast getActors();
+    objects getItems();
+    DungeonArea* getNextArea();
+  };
+
+  interface Dungeon {
+    DungeonArea* getEntrance() throws RoomNotExists;
+  };
+
 };

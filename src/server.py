@@ -49,44 +49,40 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         if not gauntlet:
             raise RuntimeError('Invalid proxy')
 
-        if gauntlet.isValid(token):
-            room_json = json.loads(room_data) #Loads file as a string
-            room_name = MAPS_PATH + (str(room_json['room'])).replace(" ", "_") + JSON_EXTENSION
-            #If file doesn't exists, create a new one
-            if not os.path.isfile(FILE_TOKEN_ROOM):
-                data = {}
+        room_json = json.loads(room_data) #Loads file as a string
+        room_name = MAPS_PATH + (str(room_json['room'])).replace(" ", "_") + JSON_EXTENSION
+        #If file doesn't exists, create a new one
+        if not os.path.isfile(FILE_TOKEN_ROOM):
+            data = {}
+                 
+            data[room_name] = gauntlet.getOwner(token)
 
-                data[room_name] = token
+            with open(FILE_TOKEN_ROOM, 'w') as file:
+                json.dump(data,file, indent=4)
 
-                with open(FILE_TOKEN_ROOM, 'w') as file:
-                    json.dump(data,file, indent=4)
+            #Publish the .json file in maps folder
+            with open(room_name, 'w') as file:
+                json.dump(room_json,file) #Dictionary to json file
 
-                #Publish the .json file in maps folder
-                with open(room_name, 'w') as file:
-                    json.dump(room_json,file) #Dictionary to json file
+        else:
+            with open(FILE_TOKEN_ROOM) as file:
+                data = json.load(file)
 
-            else:
-                with open(FILE_TOKEN_ROOM) as file:
-                    data = json.load(file)
-
-                if room_name in data:
-                    if data[room_name] == token: # Check if is the owner
-                        with open(room_name, 'w') as file:
-                            json.dump(room_json,file)
-
-                    else:
-                        raise IceGauntlet.RoomAlreadyExists()
-                else:
-                    data[room_name] = token
-
-                    with open(FILE_TOKEN_ROOM, 'w') as file:
-                        json.dump(data, file, indent=4)
-
+            if room_name in data:
+                if data[room_name] == gauntlet.getOwner(token): # Check if is the owner
                     with open(room_name, 'w') as file:
                         json.dump(room_json,file)
 
-        else:
-            raise IceGauntlet.Unauthorized()
+                else:
+                    raise IceGauntlet.RoomAlreadyExists()
+            else:
+                data[room_name] = gauntlet.getOwner(token)
+
+                with open(FILE_TOKEN_ROOM, 'w') as file:
+                    json.dump(data, file, indent=4)
+
+                with open(room_name, 'w') as file:
+                    json.dump(room_json,file)
 
     def remove(self, token, room_name, argv):
         """ Remove an existing map from directory maps/ """
@@ -98,35 +94,35 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         if not gauntlet:
             raise RuntimeError('Invalid proxy')
 
-        if gauntlet.isValid(token):
+        #if gauntlet.isValid(token):
 
-            full_room_name = room_name.replace(" ", "_") + JSON_EXTENSION
-            files = os.listdir(MAPS_PATH)
+        full_room_name = room_name.replace(" ", "_") + JSON_EXTENSION
+        files = os.listdir(MAPS_PATH)
 
-            if full_room_name in files:
-                full_room_name_path = MAPS_PATH + full_room_name
+        if full_room_name in files:
+            full_room_name_path = MAPS_PATH + full_room_name
 
-                with open(FILE_TOKEN_ROOM, "r") as file:
-                    lines = file.readlines()
+            with open(FILE_TOKEN_ROOM, "r") as file:
+                lines = file.readlines()
 
-                with open(FILE_TOKEN_ROOM, "w") as file:
+            with open(FILE_TOKEN_ROOM, "w") as file:
 
-                    for line in lines:
-                        if not (full_room_name_path in line and token in line):
-                            file.write(line)
-                        else:
-                            is_owner = True
-                            os.system('rm ' + full_room_name_path)
+                for line in lines:
+                    if not (full_room_name_path in line and gauntlet.getOwner(token) in line):
+                        file.write(line)
+                    else:
+                        is_owner = True
+                        os.system('rm ' + full_room_name_path)
 
-                if not is_owner:
-                    raise IceGauntlet.Unauthorized()
+            if not is_owner:
+                raise IceGauntlet.Unauthorized()
 
-                if os.stat(FILE_TOKEN_ROOM).st_size <= 3:
-                    os.system('rm ' + FILE_TOKEN_ROOM)
-            else:
-                raise IceGauntlet.RoomNotExists()
+            if os.stat(FILE_TOKEN_ROOM).st_size <= 3:
+                os.system('rm ' + FILE_TOKEN_ROOM)
         else:
-            raise IceGauntlet.Unauthorized()
+            raise IceGauntlet.RoomNotExists()
+        #else:
+        #    raise IceGauntlet.Unauthorized()
 
 class Server(Ice.Application):
     """ Class server initialize and create servants and brokers

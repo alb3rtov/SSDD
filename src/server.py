@@ -12,7 +12,10 @@ import sys
 import json
 import os
 import random
+import uuid
+import pickle
 import Ice
+import IceStorm
 Ice.loadSlice('icegauntlet.ice')
 import IceGauntlet
 
@@ -20,24 +23,100 @@ FILE_TOKEN_ROOM = "tokenRoom.json"
 JSON_EXTENSION = ".json"
 MAPS_PATH = "maps/"
 
+
+class DungeonAreaSyncI(IceGauntlet.DungeonAreaSync):
+    def __init__(self, dungeon_area):
+        self._parent_ = dungeon_area
+    
+    def fireEvent(self, event, current=None):
+        try:
+            event = pickle.loads(event)
+        except Exception:
+            return
+        self._parent_.event_handler(event)
+
+class DungeonAreaI(IceGauntlet.DungeonArea):
+    """
+    def run(self, argv):
+        topic_mgr = self.getEventChannel()
+
+        if not topic_mgr:
+            print("Invalid proxy")
+    
+        topic_name = "RoomManagerSyncChannel"
+
+        try:
+            topic = topic_mgr.retrieve(topic_name)
+        except IceStorm.NoSuchTopic:
+            print("No such topic found, creating")
+            topic = topic.mgr.create(topic_name)
+        
+        publisher = topic.getPublisher()
+        prueba = IceGauntlet.RoomManagerSyncPrx.uncheckedCast(publisher)
+
+        prueba.newRoom("hola","adios")
+
+    def getEventChannel(self):
+        key = 'IceStorm.TopicManager.Proxy'
+        proxy = self.communicator().propertyToProxy(key)
+        
+        if proxy is None:
+            print("property {} not set".format(key))
+            return None
+        
+        return IceStorm.TopicManagerPrx.checkedCast(proxy)
+    """
+
+    
+    def __init__(self):
+        self._topic_name_ = str(uuid.uuid4())
+        self._topic_ = self.create_new_topic(self._topic_name_)
+
+        self._subscriber_ = DungeonAreaSyncI(self)
+        self.subscribe_to_topic(self._subscriber_, self._topic_name_)
+
+    def event_handler(self, event):
+        event_type = event[0]
+        event_args = event[1:]
+        if event_type == 'kill_object':
+            self.kill_object(*event_args)
+        elif event_type == 'spawn_actor':
+            self.spawn_actor(*event_args)
+        elif event_type == 'open_door':
+            self.open_door(*event_args)
+
+    def getMap(self):
+        return 0
+
+    def getActors(self):
+        return 0
+ 
+    def getItems(self):
+        return 0
+
+    def getNextArea(self):
+        return 0
+    
+    def create_new_topic(self, topic_name):
+        return 0
+    
+
+
 class Dungeon(IceGauntlet.Dungeon, Ice.Application):
     """ Class for game service """
-    def getRoom(self, argv):
-        """ Returns a dictionary with the data map and map name """
-        #Check if there are maps in maps/
-        if len(os.listdir(MAPS_PATH)) <= 0:
-            raise IceGauntlet.RoomNotExists()
-        # Choose random map
-        files = os.listdir(MAPS_PATH)
-        value = random.randint(0, len(files)-1)
+    def getEntrance(self, argv):
+        print("getEntrance")
 
-        filename = MAPS_PATH + files[value]
-        #print(filename)
-
-        with open(filename) as file:
-            data = json.load(file)
-
-        return json.dumps(data)
+class RoomManagerSync(IceGauntlet.RoomManagerSync):
+    def hello(self, manager, managerId):
+        print("hello")
+    def announce(self, manager, managerId):
+        print("announce")
+    def newRoom(self, roomName, managerId):
+        print(roomName)
+        print(managerId)
+    def removedRoom(self, roomName):
+        print("removedRoom")
 
 class RoomManager(IceGauntlet.RoomManager, Ice.Application):
     """ Class to manage maps """
@@ -54,7 +133,7 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         #If file doesn't exists, create a new one
         if not os.path.isfile(FILE_TOKEN_ROOM):
             data = {}
-                 
+
             data[room_name] = gauntlet.getOwner(token)
 
             with open(FILE_TOKEN_ROOM, 'w') as file:
@@ -94,8 +173,6 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         if not gauntlet:
             raise RuntimeError('Invalid proxy')
 
-        #if gauntlet.isValid(token):
-
         full_room_name = room_name.replace(" ", "_") + JSON_EXTENSION
         files = os.listdir(MAPS_PATH)
 
@@ -121,14 +198,34 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
                 os.system('rm ' + FILE_TOKEN_ROOM)
         else:
             raise IceGauntlet.RoomNotExists()
-        #else:
-        #    raise IceGauntlet.Unauthorized()
+
+    def getRoom(self, argv):
+        """ Returns a dictionary with the data map and map name """
+        #Check if there are maps in maps/
+        if len(os.listdir(MAPS_PATH)) <= 0:
+            raise IceGauntlet.RoomNotExists()
+        # Choose random map
+        files = os.listdir(MAPS_PATH)
+        value = random.randint(0, len(files)-1)
+
+        filename = MAPS_PATH + files[value]
+        #print(filename)
+
+        with open(filename) as file:
+            data = json.load(file)
+
+        return json.dumps(data)
+
+    def availableRooms(self):
+        return 0
 
 class Server(Ice.Application):
     """ Class server initialize and create servants and brokers
         for RoomManager and Dungeon proxies
     """
     def run(self, argv):
+        DungeonArea()
+        """
         rm_broker = self.communicator()
         rm_servant = RoomManager()
 
@@ -154,6 +251,6 @@ class Server(Ice.Application):
         d_broker.waitForShutdown()
 
         return 0
-
+        """
 server = Server()
 sys.exit(server.main(sys.argv))

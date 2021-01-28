@@ -23,89 +23,99 @@ FILE_TOKEN_ROOM = "tokenRoom.json"
 JSON_EXTENSION = ".json"
 MAPS_PATH = "maps/"
 
-
-class DungeonAreaSyncI(IceGauntlet.DungeonAreaSync):
-    def __init__(self, dungeon_area):
-        self._parent_ = dungeon_area
-    
-    def fireEvent(self, event, current=None):
-        try:
-            event = pickle.loads(event)
-        except Exception:
-            return
-        self._parent_.event_handler(event)
-
-class DungeonAreaI(IceGauntlet.DungeonArea):
-    """
-    def run(self, argv):
-        topic_mgr = self.getEventChannel()
-
+class Subscriber(Ice.Application):
+    def get_publisher(self):
+        topic_mgr = self.get_topic_manager()
         if not topic_mgr:
-            print("Invalid proxy")
-    
-        topic_name = "RoomManagerSyncChannel"
+            print('Invalid proxy')
+            return 2
 
+        topic_name = "RoomManagerSyncChannel"
         try:
             topic = topic_mgr.retrieve(topic_name)
         except IceStorm.NoSuchTopic:
-            print("No such topic found, creating")
-            topic = topic.mgr.create(topic_name)
-        
+            print("no such topic found, creating")
+            topic = topic_mgr.create(topic_name)
+
         publisher = topic.getPublisher()
-        prueba = IceGauntlet.RoomManagerSyncPrx.uncheckedCast(publisher)
+        publisher_object = IceGauntlet.RoomManagerSyncPrx.uncheckedCast(publisher)
 
-        prueba.newRoom("hola","adios")
+        publisher_object.hello("") 
 
-    def getEventChannel(self):
+        return 0
+
+    def get_topic_manager(self):
         key = 'IceStorm.TopicManager.Proxy'
         proxy = self.communicator().propertyToProxy(key)
-        
+        if proxy is None:
+            print("property '{}' not set".format(key))
+            return None
+
+        print("Using IceStorm in: '%s'" % key)
+        return IceStorm.TopicManagerPrx.checkedCast(proxy)
+
+    def run(self, argv):
+        topic_mgr = self.get_topic_manager()
+        if not topic_mgr:
+            print("Invalid proxy")
+            return 2
+
+        ic = self.communicator()
+        servant = RoomManagerSync()
+        adapter = ic.createObjectAdapter("RoomManagerSyncAdapter")
+        subscriber = adapter.addWithUUID(servant)
+
+        topic_name = "RoomManagerSyncChannel"
+        qos = {}
+        try:
+            topic = topic_mgr.retrieve(topic_name)
+        except IceStorm.NoSuchTopic:
+            topic = topic_mgr.create(topic_name)
+
+        topic.subscribeAndGetPublisher(qos, subscriber)
+        print("Waiting events... '{}'".format(subscriber))
+
+        adapter.activate()
+
+        self.get_publisher()
+
+        self.shutdownOnInterrupt()
+        ic.waitForShutdown()
+
+        topic.unsubscribe(subscriber)
+
+        return 0
+
+class Publisher(Ice.Application):
+
+
+    def get_topic_manager(self):
+        key = 'IceStorm.TopicManager.Proxy'
+        proxy = self.communicator().propertyToProxy(key)
         if proxy is None:
             print("property {} not set".format(key))
             return None
-        
+
+        print("Using IceStorm in: '%s'" % key)
         return IceStorm.TopicManagerPrx.checkedCast(proxy)
-    """
 
-    
-    def __init__(self):
-        self._topic_name_ = str(uuid.uuid4())
-        self._topic_ = self.create_new_topic(self._topic_name_)
+    def run(self, argv):
+        topic_mgr = self.get_topic_manager()
+        if not topic_mgr:
+            print('Invalid proxy')
+            return 2
 
-        self._subscriber_ = DungeonAreaSyncI(self)
-        self.subscribe_to_topic(self._subscriber_, self._topic_name_)
+        topic_name = "RoomManagerSyncChannel"
+        try:
+            topic = topic_mgr.retrieve(topic_name)
+        except IceStorm.NoSuchTopic:
+            print("no such topic found, creating")
+            topic = topic_mgr.create(topic_name)
 
-    def event_handler(self, event):
-        event_type = event[0]
-        event_args = event[1:]
-        if event_type == 'kill_object':
-            self.kill_object(*event_args)
-        elif event_type == 'spawn_actor':
-            self.spawn_actor(*event_args)
-        elif event_type == 'open_door':
-            self.open_door(*event_args)
+        publisher = topic.getPublisher()
+        publisher_object = IceGauntlet.RoomManagerSyncPrx.uncheckedCast(publisher)
 
-    def getMap(self):
-        return 0
-
-    def getActors(self):
-        return 0
- 
-    def getItems(self):
-        return 0
-
-    def getNextArea(self):
-        return 0
-    
-    def create_new_topic(self, topic_name):
-        return 0
-    
-
-
-class Dungeon(IceGauntlet.Dungeon, Ice.Application):
-    """ Class for game service """
-    def getEntrance(self, argv):
-        print("getEntrance")
+        return publisher_object
 
 class RoomManagerSync(IceGauntlet.RoomManagerSync):
     def hello(self, manager, managerId):
@@ -113,12 +123,54 @@ class RoomManagerSync(IceGauntlet.RoomManagerSync):
     def announce(self, manager, managerId):
         print("announce")
     def newRoom(self, roomName, managerId):
-        print(roomName)
-        print(managerId)
+        print("roomName")
+        print("managerId")
     def removedRoom(self, roomName):
-        print("removedRoom")
+        print(removedRoom)
 
 class RoomManager(IceGauntlet.RoomManager, Ice.Application):
+    def get_topic_manager(self):
+        key = 'IceStorm.TopicManager.Proxy'
+        proxy = self.communicator().propertyToProxy(key)
+        if proxy is None:
+            print("property '{}' not set".format(key))
+            return None
+
+        print("Using IceStorm in: '%s'" % key)
+        return IceStorm.TopicManagerPrx.checkedCast(proxy)
+    
+    def __init__(self):
+        self.manager_id = str(uuid.uuid4())
+        print(self.manager_id)
+        topic_mgr = self.get_topic_manager()
+
+        if not topic_mgr:
+            print("Invalid proxy")
+            return 2
+
+        ic = self.communicator()
+        servant = PrinterI()
+        adapter = ic.createObjectAdapter("RoomManagerSyncAdapter")
+        subscriber = adapter.addWithUUID(servant)
+
+        topic_name = "RoomManagerSyncChannel"
+        qos = {}
+        try:
+            topic = topic_mgr.retrieve(topic_name)
+        except IceStorm.NoSuchTopic:
+            topic = topic_mgr.create(topic_name)
+
+        topic.subscribeAndGetPublisher(qos, subscriber)
+        print("Waiting events... '{}'".format(subscriber))
+
+        adapter.activate()
+        self.shutdownOnInterrupt()
+
+        ic.waitForShutdown()
+        topic.unsubscribe(subscriber)
+
+        return 0
+
     """ Class to manage maps """
     def publish(self, token, room_data, argv):
         """ Generate a map with the given room_data and check the token """
@@ -219,12 +271,13 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
     def availableRooms(self):
         return 0
 
-class Server(Ice.Application):
+class Server():
     """ Class server initialize and create servants and brokers
         for RoomManager and Dungeon proxies
     """
-    def run(self, argv):
-        DungeonArea()
+    def main(self, argv):
+        rm_servant = RoomManager()
+
         """
         rm_broker = self.communicator()
         rm_servant = RoomManager()

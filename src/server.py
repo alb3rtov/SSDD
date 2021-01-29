@@ -25,20 +25,23 @@ MAPS_PATH = "maps/"
 
 servers_list = {}
 manager_id = str(uuid.uuid4())
+received = False
+
 
 class RoomManagerSync(IceGauntlet.RoomManagerSync):
     def hello(self, manager, managerId, current=None):
         try:
-            if (manager_id != managerId):
-                print(" o/ HELLO {0} - RoomManager Instance: {1}".format(managerId, manager))
+            if (manager_id != managerId): # No recibes el evento HELLO si eres el que lo envía
                 servers_list.update({managerId : manager})
-                self.announce(manager, managerId)
-                #print(servers_list)
+                print(" o/ HELLO {0} - RoomManager Instance: {1}".format(managerId, manager))
+
+            print(servers_list)
         except:
             print("Error appeding server to the list")
 
     def announce(self, manager, managerId, current=None):
-        print(" a/ ANNOUNCE {0} - RoomManager Instance: {1}".format(managerId, manager))
+        if (manager_id != managerId):
+            print(" a/ ANNOUNCE {0} - RoomManager Instance: {1}".format(managerId, manager))
 
     def newRoom(self, roomName, managerId, current=None):
         print("newRoom")
@@ -85,7 +88,8 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         room_manager = IceGauntlet.RoomManagerPrx.uncheckedCast(proxy)
 
         print("Waiting events... '{}'".format(subscriber))
-        publisher_object.hello (room_manager , manager_id)
+        publisher_object.hello(room_manager , manager_id)
+        publisher_object.announce(room_manager , manager_id)
 
         adapter.activate()
 

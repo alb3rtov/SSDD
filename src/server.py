@@ -23,27 +23,27 @@ FILE_TOKEN_ROOM = "tokenRoom.json"
 JSON_EXTENSION = ".json"
 MAPS_PATH = "maps/"
 
-class Subscriber(Ice.Application):
-    def get_publisher(self):
-        topic_mgr = self.get_topic_manager()
-        if not topic_mgr:
-            print('Invalid proxy')
-            return 2
+servers_list = {}
 
-        topic_name = "RoomManagerSyncChannel"
+class RoomManagerSync(IceGauntlet.RoomManagerSync):
+    def hello(self, manager, managerId, current=None):
         try:
-            topic = topic_mgr.retrieve(topic_name)
-        except IceStorm.NoSuchTopic:
-            print("no such topic found, creating")
-            topic = topic_mgr.create(topic_name)
+            print("HELLO {0}".format(managerId))
+            self.announce(manager, managerId)
+        except:
+            print("Error")
 
-        publisher = topic.getPublisher()
-        publisher_object = IceGauntlet.RoomManagerSyncPrx.uncheckedCast(publisher)
+    def announce(self, manager, managerId, current=None):
+        print("announce")
 
-        publisher_object.hello("") 
+    def newRoom(self, roomName, managerId, current=None):
+        print("roomName")
+        print("managerId")
 
-        return 0
+    def removedRoom(self, roomName, current=None):
+        print(roomName)
 
+class RoomManager(IceGauntlet.RoomManager, Ice.Application):
     def get_topic_manager(self):
         key = 'IceStorm.TopicManager.Proxy'
         proxy = self.communicator().propertyToProxy(key)
@@ -53,9 +53,12 @@ class Subscriber(Ice.Application):
 
         print("Using IceStorm in: '%s'" % key)
         return IceStorm.TopicManagerPrx.checkedCast(proxy)
-
+    
     def run(self, argv):
+        self.manager_id = str(uuid.uuid4())
+        print(self.manager_id)
         topic_mgr = self.get_topic_manager()
+
         if not topic_mgr:
             print("Invalid proxy")
             return 2
@@ -73,97 +76,14 @@ class Subscriber(Ice.Application):
             topic = topic_mgr.create(topic_name)
 
         topic.subscribeAndGetPublisher(qos, subscriber)
-        print("Waiting events... '{}'".format(subscriber))
-
-        adapter.activate()
-
-        self.get_publisher()
-
-        self.shutdownOnInterrupt()
-        ic.waitForShutdown()
-
-        topic.unsubscribe(subscriber)
-
-        return 0
-
-class Publisher(Ice.Application):
-
-
-    def get_topic_manager(self):
-        key = 'IceStorm.TopicManager.Proxy'
-        proxy = self.communicator().propertyToProxy(key)
-        if proxy is None:
-            print("property {} not set".format(key))
-            return None
-
-        print("Using IceStorm in: '%s'" % key)
-        return IceStorm.TopicManagerPrx.checkedCast(proxy)
-
-    def run(self, argv):
-        topic_mgr = self.get_topic_manager()
-        if not topic_mgr:
-            print('Invalid proxy')
-            return 2
-
-        topic_name = "RoomManagerSyncChannel"
-        try:
-            topic = topic_mgr.retrieve(topic_name)
-        except IceStorm.NoSuchTopic:
-            print("no such topic found, creating")
-            topic = topic_mgr.create(topic_name)
-
         publisher = topic.getPublisher()
         publisher_object = IceGauntlet.RoomManagerSyncPrx.uncheckedCast(publisher)
+        publisher_object.removedRoom(self.manager_id)
 
-        return publisher_object
-
-class RoomManagerSync(IceGauntlet.RoomManagerSync):
-    def hello(self, manager, managerId):
-        print("hello")
-    def announce(self, manager, managerId):
-        print("announce")
-    def newRoom(self, roomName, managerId):
-        print("roomName")
-        print("managerId")
-    def removedRoom(self, roomName):
-        print(removedRoom)
-
-class RoomManager(IceGauntlet.RoomManager, Ice.Application):
-    def get_topic_manager(self):
-        key = 'IceStorm.TopicManager.Proxy'
-        proxy = self.communicator().propertyToProxy(key)
-        if proxy is None:
-            print("property '{}' not set".format(key))
-            return None
-
-        print("Using IceStorm in: '%s'" % key)
-        return IceStorm.TopicManagerPrx.checkedCast(proxy)
-    
-    def __init__(self):
-        self.manager_id = str(uuid.uuid4())
-        print(self.manager_id)
-        topic_mgr = self.get_topic_manager()
-
-        if not topic_mgr:
-            print("Invalid proxy")
-            return 2
-
-        ic = self.communicator()
-        servant = PrinterI()
-        adapter = ic.createObjectAdapter("RoomManagerSyncAdapter")
-        subscriber = adapter.addWithUUID(servant)
-
-        topic_name = "RoomManagerSyncChannel"
-        qos = {}
-        try:
-            topic = topic_mgr.retrieve(topic_name)
-        except IceStorm.NoSuchTopic:
-            topic = topic_mgr.create(topic_name)
-
-        topic.subscribeAndGetPublisher(qos, subscriber)
         print("Waiting events... '{}'".format(subscriber))
-
+        
         adapter.activate()
+
         self.shutdownOnInterrupt()
 
         ic.waitForShutdown()
@@ -276,7 +196,7 @@ class Server():
         for RoomManager and Dungeon proxies
     """
     def main(self, argv):
-        rm_servant = RoomManager()
+        rm_servant = RoomManager().main(sys.argv)
 
         """
         rm_broker = self.communicator()

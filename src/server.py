@@ -24,24 +24,27 @@ JSON_EXTENSION = ".json"
 MAPS_PATH = "maps/"
 
 servers_list = {}
+manager_id = str(uuid.uuid4())
 
 class RoomManagerSync(IceGauntlet.RoomManagerSync):
     def hello(self, manager, managerId, current=None):
         try:
-            print("HELLO {0}".format(managerId))
-            self.announce(manager, managerId)
+            if (manager_id != managerId):
+                print(" o/ HELLO {0} - RoomManager Instance: {1}".format(managerId, manager))
+                servers_list.update({managerId : manager})
+                self.announce(manager, managerId)
+                #print(servers_list)
         except:
-            print("Error")
+            print("Error appeding server to the list")
 
     def announce(self, manager, managerId, current=None):
-        print("announce")
+        print(" a/ ANNOUNCE {0} - RoomManager Instance: {1}".format(managerId, manager))
 
     def newRoom(self, roomName, managerId, current=None):
-        print("roomName")
-        print("managerId")
+        print("newRoom")
 
     def removedRoom(self, roomName, current=None):
-        print(roomName)
+        print("removedRoom")
 
 class RoomManager(IceGauntlet.RoomManager, Ice.Application):
     def get_topic_manager(self):
@@ -55,8 +58,7 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         return IceStorm.TopicManagerPrx.checkedCast(proxy)
     
     def run(self, argv):
-        self.manager_id = str(uuid.uuid4())
-        print(self.manager_id)
+        #self.manager_id = str(uuid.uuid4())
         topic_mgr = self.get_topic_manager()
 
         if not topic_mgr:
@@ -64,9 +66,11 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
             return 2
 
         ic = self.communicator()
-        servant = RoomManagerSync()
+        servant_rms = RoomManagerSync()
+        servant_rm = RoomManager()
         adapter = ic.createObjectAdapter("RoomManagerSyncAdapter")
-        subscriber = adapter.addWithUUID(servant)
+        subscriber = adapter.addWithUUID(servant_rms)
+        proxy = adapter.addWithUUID(servant_rm)
 
         topic_name = "RoomManagerSyncChannel"
         qos = {}
@@ -78,10 +82,11 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         topic.subscribeAndGetPublisher(qos, subscriber)
         publisher = topic.getPublisher()
         publisher_object = IceGauntlet.RoomManagerSyncPrx.uncheckedCast(publisher)
-        publisher_object.removedRoom(self.manager_id)
+        room_manager = IceGauntlet.RoomManagerPrx.uncheckedCast(proxy)
 
         print("Waiting events... '{}'".format(subscriber))
-        
+        publisher_object.hello (room_manager , manager_id)
+
         adapter.activate()
 
         self.shutdownOnInterrupt()
@@ -196,7 +201,7 @@ class Server():
         for RoomManager and Dungeon proxies
     """
     def main(self, argv):
-        rm_servant = RoomManager().main(sys.argv)
+        RoomManager().main(sys.argv)
 
         """
         rm_broker = self.communicator()

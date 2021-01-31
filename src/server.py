@@ -24,6 +24,7 @@ JSON_EXTENSION = ".json"
 MAPS_PATH = "maps/"
 
 servers_list = {}
+maps_list = []
 
 class RoomManagerSync(IceGauntlet.RoomManagerSync):
     def hello(self, manager, managerId, current=None):
@@ -79,14 +80,12 @@ class RoomManager(IceGauntlet.RoomManager, Ice.Application):
         subscriber = adapter.addWithUUID(servant_rms)
         proxy = adapter.addWithUUID(servant_rm)
         
-
         topic_name = "RoomManagerSyncChannel"
         qos = {}
         try:
             self.topic = topic_mgr.retrieve(topic_name)
         except IceStorm.NoSuchTopic:
             self.topic = topic_mgr.create(topic_name)
-
 
         self.topic.subscribeAndGetPublisher(qos, subscriber)
 
@@ -211,6 +210,8 @@ class Server():
         for RoomManager and Dungeon proxies
     """
     def main(self, argv):
+        
+
         RoomManager().main(sys.argv)
 
         """

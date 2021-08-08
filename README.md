@@ -6,7 +6,7 @@ https://github.com/alb3rtov/ssdd
 - Alvaro Ramos Cobacho <Alvaro.Ramos4@alu.uclm.es>
 
 # Directorios
-- El "slice" se encuentra en la raíz del proyecto (icegauntlet.ice)
+- El "slice" se encuentra en la raíz del proyecto ([icegauntlet.ice](https://github.com/alb3rtov/SSDD/blob/L1/icegauntlet.ice))
 - Directorio "src": contiene los archivos de python del cliente y servidor
 - Directorio "config": contiene los archivos de configuración de ZeroC Ice
 - Directorio "maps": contiene los mapas (archivos .json), que los clientes subiran.
